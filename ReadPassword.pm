@@ -14,11 +14,12 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 # The special characters in the input stream
 %SPECIAL = (
     "\x03"	=> 'INT',	# Control-C, Interrupt
+    "\x15"	=> 'NAK',	# Control-U, NAK (clear buffer)
     "\x08"	=> 'DEL',	# Backspace
     "\x7f"	=> 'DEL',	# Delete
     "\x0d"	=> 'ENT',	# CR, Enter
@@ -116,6 +117,10 @@ KEYSTROKE:
 		        # Delete/backspace key
 			# Take back one char, if possible
 			chop $input;
+		    } elsif ($meaning eq 'NAK') {
+		        # Control-U (NAK)
+		        # Clear what we have read so far
+		        $input = '';
 		    } elsif ($interruptable and $meaning eq 'INT') {
 			# Breaking out of the program
 			# Return early
@@ -186,14 +191,15 @@ The B<read_password> function prompts for input, reads a line of text from
 the keyboard, then returns that line to the caller. The line of text
 doesn't include the newline character, so there's no need to use B<chomp>.
 
-While the user is entering the text, a few special characters are
-processed. The character delete (or the character backspace) will back up
-one character, removing the last character in the input buffer (if any).
-The character CR (or the character LF) will signal the end of input,
-causing the accumulated input buffer to be returned. And, optionally, the
-character Control-C may be used to terminate the input operation. (See
-details below.) All other characters, even ones which would normally have
-special purposes, will be added to the input buffer. 
+While the user is entering the text, a few special characters are processed.
+The character delete (or the character backspace) will back up one
+character, removing the last character in the input buffer (if any). The
+character CR (or the character LF) will signal the end of input, causing the
+accumulated input buffer to be returned. Control-U will empty the input
+buffer. And, optionally, the character Control-C may be used to terminate
+the input operation. (See details below.) All other characters, even ones
+which would normally have special purposes, will be added to the input
+buffer.
 
 It is not recommended, though, that you use the as-yet-unspecified control
 characters in your passwords, as those characters may become meaningful in
