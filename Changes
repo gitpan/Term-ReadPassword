@@ -6,3 +6,6 @@ Revision history for Perl extension Term::ReadPassword.
 0.02  Wed Dec 8 2004
 	- added support for ctrl-U (James FitzGibbon
 	  <jfitzgibbon@primustel.ca>)
+
+0.03  Tue Mar 29 18:35:03 2005
+	- updated tests to (try to) pass automated tests
