@@ -9,3 +9,7 @@ Revision history for Perl extension Term::ReadPassword.
 
 0.03  Tue Mar 29 18:35:03 2005
 	- updated tests to (try to) pass automated tests
+
+0.04  Thu Mar 31 13:17:00 2005
+	- tweaked tests some more, trying to pass those automated tests
+	- still no new functionality
