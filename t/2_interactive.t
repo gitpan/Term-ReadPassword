@@ -32,10 +32,18 @@ INTERACTIVE: {
   { 
     # Naked block for scoping and redo
     print TTYOUT "\n\n# (Don't worry - you're not changing any real password!)\n";
-    my $new_pw = read_password("Enter your (fake) new password: ", 10);
+    my $new_pw = read_password("Enter your (fake) new password: ", 20);
     if (not defined $new_pw) {
       print TTYOUT "# Time's up!\n";
       print TTYOUT "# Were you scared, or are you merely an automated test?\n";
+      print "ok 1\n";
+      last INTERACTIVE;
+    } elsif ($new_pw eq '') {
+      print TTYOUT "# No empty passwords allowed.\n";
+      print TTYOUT "# (Use the password ' ' (a space character) to skip this test.)\n";
+      redo;
+    } elsif ($new_pw =~ /^ +$/) {
+      print TTYOUT "# Skipping the test!\n";
       print "ok 1\n";
       last INTERACTIVE;
     } elsif ($new_pw =~ /([^\x20-\x7E])/) {

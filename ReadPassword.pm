@@ -3,6 +3,10 @@ package Term::ReadPassword;
 use strict;
 use Term::ReadLine;
 use POSIX qw(:termios_h);
+    use constant CC_FIELDS =>
+	(VEOF VEOL VERASE VINTR VKILL VQUIT
+	VSUSP VSTART VSTOP VMIN VTIME NCCS);
+
 use vars qw(
     $VERSION @ISA @EXPORT @EXPORT_OK
     $ALLOW_STDIN %SPECIAL $SUPPRESS_NEWLINE $INPUT_LIMIT
@@ -14,7 +18,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.04';
+$VERSION = '0.05';
 
 # The special characters in the input stream
 %SPECIAL = (
@@ -69,6 +73,7 @@ sub read_password {
     my $term = POSIX::Termios->new();
     $term->getattr($fd_tty);
     my $original_flags = $term->getlflag();
+    my %original_cc = map +($_, $term->getcc($_)), CC_FIELDS;
 
     # What makes this setup different from the ordinary?
     # No keyboard-generated signals, no echoing, no canonical input
@@ -150,6 +155,9 @@ KEYSTROKE:
 
     # Let's put everything back where we found it.
     $term->setlflag($original_flags);
+    while (my($field, $value) = each %original_cc) {
+        $term->setcc($field, $value);
+    }
     $term->setattr($fd_tty, TCSAFLUSH);
     close(TTY);
     close(TTYOUT);
