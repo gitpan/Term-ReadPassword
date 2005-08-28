@@ -17,3 +17,7 @@ Revision history for Perl extension Term::ReadPassword.
 0.05  Tue Jun 14 11:50:00 2005
 	- a space in place of the password now skips the interactive test
 	- save and restore the cc array, which seems to fix a bug
+
+0.06  Sun Aug 28 13:07:00 2005
+	- Setting $Term::ReadPassword::USE_STARS to a true value now
+	  echoes stars for password characters.

@@ -10,6 +10,7 @@ use POSIX qw(:termios_h);
 use vars qw(
     $VERSION @ISA @EXPORT @EXPORT_OK
     $ALLOW_STDIN %SPECIAL $SUPPRESS_NEWLINE $INPUT_LIMIT
+    $USE_STARS $STAR_STRING $UNSTAR_STRING
 );
 
 require Exporter;
@@ -18,7 +19,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.05';
+$VERSION = '0.06';
 
 # The special characters in the input stream
 %SPECIAL = (
@@ -93,6 +94,11 @@ sub read_password {
 	$term->setcc(VMIN, 1);
     }
 
+    # Optionally echo stars in place of password characters. The 
+    # $unstar_string uses backspace characters.
+    my $star_string = $USE_STARS ? ($STAR_STRING || '*') : '';
+    my $unstar_string = $USE_STARS ? ($UNSTAR_STRING || "\b*\b \b") : '';
+
     # If there's anything already buffered, we should throw it out. This
     # is to discourage users from typing their password before they see
     # the prompt, since their keystrokes may be echoing on the screen. 
@@ -121,10 +127,16 @@ KEYSTROKE:
 		    } elsif ($meaning eq 'DEL') {
 		        # Delete/backspace key
 			# Take back one char, if possible
-			chop $input;
+			if (length $input) {
+			    $input = substr $input, 0, length($input)-1;
+			    print TTYOUT $unstar_string;
+			}
 		    } elsif ($meaning eq 'NAK') {
 		        # Control-U (NAK)
 		        # Clear what we have read so far
+			for (1..length $input) {
+			    print TTYOUT $unstar_string;
+			}
 		        $input = '';
 		    } elsif ($interruptable and $meaning eq 'INT') {
 			# Breaking out of the program
@@ -133,10 +145,12 @@ KEYSTROKE:
 		    } else {
 		        # Just an ordinary keystroke
 			$input .= $new_key;
+			print TTYOUT $star_string;
 		    }
 		} else {
 		    # Not special
 		    $input .= $new_key;
+		    print TTYOUT $star_string;
 		}
  	    }
 	    # Just in case someone sends a lot of data
@@ -151,7 +165,7 @@ KEYSTROKE:
 
     # Done with waiting for input. Let's not leave the cursor sitting
     # there, after the prompt.
-    print TTY "\n" unless $SUPPRESS_NEWLINE;
+    print TTYOUT "\n" unless $SUPPRESS_NEWLINE;
 
     # Let's put everything back where we found it.
     $term->setlflag($original_flags);
