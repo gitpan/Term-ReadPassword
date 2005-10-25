@@ -19,7 +19,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.06';
+$VERSION = '0.07';
 
 # The special characters in the input stream
 %SPECIAL = (
@@ -286,6 +286,11 @@ be possible for someone to find that password, in plaintext, in a core
 dump. And that's just one potential security hole.
 
 In short, if serious security is an issue, don't use this module.
+
+=head1 LICENSE
+
+This program is free software; you may redistribute it, modify it, or
+both, under the same terms as Perl itself.
 
 =head1 AUTHOR
 
