@@ -7,6 +7,8 @@ if ($ENV{AUTOMATED_TESTING}) {
     exit;
 }
 
+$Term::ReadPassword::USE_STARS = $ENV{USE_STARS};
+
 print "1..1\n";
 
 # Let's open the TTY (rather than STDOUT) if we can

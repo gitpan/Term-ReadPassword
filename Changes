@@ -21,3 +21,6 @@ Revision history for Perl extension Term::ReadPassword.
 0.06  Sun Aug 28 13:07:00 2005
 	- Setting $Term::ReadPassword::USE_STARS to a true value now
 	  echoes stars for password characters.
+
+0.09  Wed Dec 12 11:20:00 2007
+	- Bug fix wrt CC_FIELDS, improved documentation 

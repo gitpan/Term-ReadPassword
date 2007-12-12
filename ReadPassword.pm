@@ -3,9 +3,19 @@ package Term::ReadPassword;
 use strict;
 use Term::ReadLine;
 use POSIX qw(:termios_h);
-    use constant CC_FIELDS =>
-	(VEOF VEOL VERASE VINTR VKILL VQUIT
-	VSUSP VSTART VSTOP VMIN VTIME NCCS);
+my %CC_FIELDS = (
+	VEOF => VEOF,
+	VEOL => VEOL,
+	VERASE => VERASE,
+	VINTR => VINTR,
+	VKILL => VKILL,
+	VQUIT => VQUIT,
+	VSUSP => VSUSP,
+	VSTART => VSTART,
+	VSTOP => VSTOP,
+	VMIN => VMIN,
+	VTIME => VTIME,
+    );
 
 use vars qw(
     $VERSION @ISA @EXPORT @EXPORT_OK
@@ -19,7 +29,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.07';
+$VERSION = '0.09';
 
 # The special characters in the input stream
 %SPECIAL = (
@@ -74,7 +84,10 @@ sub read_password {
     my $term = POSIX::Termios->new();
     $term->getattr($fd_tty);
     my $original_flags = $term->getlflag();
-    my %original_cc = map +($_, $term->getcc($_)), CC_FIELDS;
+    my %original_cc;
+    for my $field_name (keys %CC_FIELDS) {
+        $original_cc{$field_name} = $term->getcc($CC_FIELDS{$field_name});
+    }
 
     # What makes this setup different from the ordinary?
     # No keyboard-generated signals, no echoing, no canonical input
@@ -170,7 +183,7 @@ KEYSTROKE:
     # Let's put everything back where we found it.
     $term->setlflag($original_flags);
     while (my($field, $value) = each %original_cc) {
-        $term->setcc($field, $value);
+        $term->setcc($CC_FIELDS{$field}, $value);
     }
     $term->setattr($fd_tty, TCSAFLUSH);
     close(TTY);
@@ -273,6 +286,16 @@ the prompt, any input which has been "typed ahead" before the prompt
 appears will be discarded. And whether the input operation terminates
 normally or not, a newline character will be printed, so that the cursor
 will not remain on the line after the prompt. 
+
+=head1 BUGS
+
+This module has a poorly-designed interface, and should be thoroughly
+rethought. 
+
+Users who wish to see password characters echoed as stars may set
+$Term::ReadPassword::USE_STARS to a true value. The bugs are that some
+terminals may not erase stars when the user corrects an error, and that
+using stars leaks information to shoulder-surfers. 
 
 =head1 SECURITY
 
