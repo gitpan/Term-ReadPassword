@@ -29,7 +29,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.09';
+$VERSION = '0.11';
 
 # The special characters in the input stream
 %SPECIAL = (
@@ -289,8 +289,10 @@ will not remain on the line after the prompt.
 
 =head1 BUGS
 
+Windows users will want Term::ReadPassword::Win32.
+
 This module has a poorly-designed interface, and should be thoroughly
-rethought. 
+rethought and probably re-united with the Windows version. 
 
 Users who wish to see password characters echoed as stars may set
 $Term::ReadPassword::USE_STARS to a true value. The bugs are that some
@@ -317,7 +319,7 @@ both, under the same terms as Perl itself.
 
 =head1 AUTHOR
 
-Tom Phoenix <rootbeer@redcat.com>
+Tom Phoenix <rootbeer@redcat.com>. Copyright (C) 2007 Tom Phoenix.
 
 =head1 SEE ALSO
 

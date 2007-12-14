@@ -24,3 +24,6 @@ Revision history for Perl extension Term::ReadPassword.
 
 0.09  Wed Dec 12 11:20:00 2007
 	- Bug fix wrt CC_FIELDS, improved documentation 
+
+0.11  Fri Dec 14 12:00:00 2007
+	- Only documentation changes.
