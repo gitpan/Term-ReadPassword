@@ -29,7 +29,7 @@ require Exporter;
 @EXPORT = qw(
 	read_password 
 );
-$VERSION = '0.11';
+$VERSION = '0.11_01';
 
 # The special characters in the input stream
 %SPECIAL = (

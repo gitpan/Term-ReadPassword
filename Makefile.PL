@@ -1,8 +1,32 @@
+use strict;
+use warnings;
+
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
+my %prereqs;
+if ($^O eq 'MSWin32') {
+	%prereqs = (
+		'Win32'          => 0,
+		'Win32::Console' => 0,
+		'Win32API::File' => 0,
+	);
+#} else {
+#	%prereqs = (
+#		'Term::ReadPassword' => 0,
+#	);
+}
+
+
 WriteMakefile(
-    'NAME'	=> 'Term::ReadPassword',
-    'VERSION_FROM' => 'ReadPassword.pm', # finds $VERSION
-    'dist'	=> { 'COMPRESS' => 'gzip', 'SUFFIX' => 'gz' },
+	'NAME'         => 'Term::ReadPassword',
+	'VERSION_FROM' => 'lib/Term/ReadPassword.pm',
+	'LICENSE'      => 'perl',
+	'PREREQ_PM'    => {
+		'Test::More' => 0,
+		%prereqs,
+	},
+	'META_MERGE'   => {
+		resources => {
+			repository  =>  'https://github.com/szabgab/Term-ReadPassword-Win32',
+		},
+	},
 );

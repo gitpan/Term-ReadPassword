@@ -1,8 +1,15 @@
-README
+.travis.yml
 Changes
-MANIFEST
+lib/POD2/JA/Term/ReadPassword/Win32.pod
+lib/Term/ReadPassword.pm
+lib/Term/ReadPassword/Win32.pm
 Makefile.PL
-ReadPassword.pm
-t/1_basics.t
-t/2_interactive.t
+MANIFEST			This list of files
+MANIFEST.SKIP
 META.yml
+README
+README.ja
+t/1_basics.t
+t/1_loadtest.t
+t/2_interactive.t
+META.json                                Module JSON meta-data (added by MakeMaker)
