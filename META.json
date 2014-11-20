@@ -38,9 +38,15 @@
    },
    "release_status" : "testing",
    "resources" : {
+      "bugtracker" : {
+         "web" : "http://github.com/szabgab/Term-ReadPassword/issues"
+      },
       "repository" : {
-         "url" : "https://github.com/szabgab/Term-ReadPassword-Win32"
+         "type" : "git",
+         "url" : "http://github.com/szabgab/Term-ReadPassword.git",
+         "web" : "http://github.com/szabgab/Term-ReadPassword",
+         "x_license" : "http://dev.perl.org/licenses/"
       }
    },
-   "version" : "0.11_01"
+   "version" : "0.11_02"
 }

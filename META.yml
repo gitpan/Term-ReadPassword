@@ -20,5 +20,6 @@ no_index:
 requires:
   Test::More: '0'
 resources:
-  repository: https://github.com/szabgab/Term-ReadPassword-Win32
-version: 0.11_01
+  bugtracker: http://github.com/szabgab/Term-ReadPassword/issues
+  repository: http://github.com/szabgab/Term-ReadPassword.git
+version: 0.11_02

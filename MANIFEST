@@ -1,3 +1,5 @@
+.perltidyrc
+.tidyallrc
 .travis.yml
 Changes
 lib/POD2/JA/Term/ReadPassword/Win32.pod
@@ -9,6 +11,7 @@ MANIFEST.SKIP
 META.yml
 README
 README.ja
+t/10_win32.t
 t/1_basics.t
 t/1_loadtest.t
 t/2_interactive.t

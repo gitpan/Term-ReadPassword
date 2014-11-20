@@ -1,26 +1,26 @@
 package Term::ReadPassword::Win32;
 
 use strict;
+use warnings;
 
-require Exporter;
+use Exporter qw(import);
 
 use vars qw(
-	$VERSION @ISA @EXPORT @EXPORT_OK
 	$SUPPRESS_NEWLINE $INPUT_LIMIT
 	$USE_STARS $STAR_STRING $UNSTAR_STRING
 );
 
-@ISA = qw(Exporter);
-@EXPORT = qw(read_password);
-@EXPORT_OK = qw(ReadPasswd read_passwd);
+our @EXPORT    = qw(read_password);
+our @EXPORT_OK = qw(ReadPasswd read_passwd);
 
-$VERSION = '0.11_01';
+our $VERSION = '0.11_02';
 
-if (IsWin32()) {
+if ( IsWin32() ) {
 	eval('use Win32');
 	eval('use Win32::Console');
 	eval('use Win32API::File');
-} else {
+}
+else {
 	eval('require Term::ReadPassword');
 }
 
@@ -30,125 +30,135 @@ $INPUT_LIMIT = 1000;
 sub ReadPasswd {
 	read_password(@_);
 }
+
 sub read_passwd {
 	read_password(@_);
 }
 
 sub read_password {
-	my ($prompt, $idle_limit, $interruptmode) = @_;
-	$prompt = ''	unless defined $prompt;
-	$idle_limit = 0	unless defined $idle_limit;
-	$interruptmode = 0	unless defined $interruptmode;
-	
-	if (!IsWin32()) {
-		my $interruptable = ($interruptmode > 0) ? 1 : 0;
-		
+	my ( $prompt, $idle_limit, $interruptmode ) = @_;
+	$prompt        = '' unless defined $prompt;
+	$idle_limit    = 0  unless defined $idle_limit;
+	$interruptmode = 0  unless defined $interruptmode;
+
+	if ( !IsWin32() ) {
+		my $interruptable = ( $interruptmode > 0 ) ? 1 : 0;
+
 		$Term::ReadPassword::SUPPRESS_NEWLINE = $SUPPRESS_NEWLINE;
-		$Term::ReadPassword::INPUT_LIMIT = $INPUT_LIMIT;
-		$Term::ReadPassword::USE_STARS = $USE_STARS;
-		$Term::ReadPassword::STAR_STRING = $STAR_STRING;
-		$Term::ReadPassword::UNSTAR_STRING = $UNSTAR_STRING;
-		
-		return Term::ReadPassword::read_password($prompt, $idle_limit,
-				$interruptable);
+		$Term::ReadPassword::INPUT_LIMIT      = $INPUT_LIMIT;
+		$Term::ReadPassword::USE_STARS        = $USE_STARS;
+		$Term::ReadPassword::STAR_STRING      = $STAR_STRING;
+		$Term::ReadPassword::UNSTAR_STRING    = $UNSTAR_STRING;
+
+		return Term::ReadPassword::read_password( $prompt, $idle_limit,
+			$interruptable );
 	}
-	
-	$idle_limit *= 1000;	# sec -> msec
-	
-	my $CONIN = new Win32::Console(Win32::Console::STD_INPUT_HANDLE());
-	my $CONOUT = new Win32::Console(Win32::Console::STD_ERROR_HANDLE());
-	
+
+	$idle_limit *= 1000;    # sec -> msec
+
+	my $CONIN  = Win32::Console->new( Win32::Console::STD_INPUT_HANDLE() );
+	my $CONOUT = Win32::Console->new( Win32::Console::STD_ERROR_HANDLE() );
+
 	# make sure that input and output are not redirected
 	my $hStdin = $CONIN->{'handle'};
-	$CONIN->{'handle'} = Win32API::File::createFile('CONIN$', 'rw');
+	$CONIN->{'handle'} = Win32API::File::createFile( 'CONIN$', 'rw' );
 	my $hStderr = $CONOUT->{'handle'};
-	$CONOUT->{'handle'} = Win32API::File::createFile('CONOUT$', 'rw');
-	
+	$CONOUT->{'handle'} = Win32API::File::createFile( 'CONOUT$', 'rw' );
+
 	$CONOUT->Write($prompt);
-	
+
 	$CONIN->Flush();
-	
+
 	my $conmode = $CONIN->Mode();
-	if ($interruptmode <= 1) {
+	if ( $interruptmode <= 1 ) {
+
 		# disable the system for processing Ctrl+C
-		$CONIN->Mode($conmode & ~Win32::Console::ENABLE_PROCESSED_INPUT());
+		$CONIN->Mode( $conmode & ~Win32::Console::ENABLE_PROCESSED_INPUT() );
 	}
-	
-	# Optionally echo stars in place of password characters. 
-	my $star_string = $USE_STARS ? ($STAR_STRING || '*') : '';
-	my $unstar_string = $USE_STARS ? ($UNSTAR_STRING || "\b \b") : '';
-	
+
+	# Optionally echo stars in place of password characters.
+	my $star_string   = $USE_STARS ? ( $STAR_STRING   || '*' )     : '';
+	my $unstar_string = $USE_STARS ? ( $UNSTAR_STRING || "\b \b" ) : '';
+
 	# the input buffer
 	my $input = '';
-	
-	my $tick = Win32::GetTickCount();
+
+	my $tick  = Win32::GetTickCount();
 	my $tick2 = $tick;
 keyin:
 	while (1) {
-		while ($CONIN->GetEvents() == 0) {
+		while ( $CONIN->GetEvents() == 0 ) {
 			Win32::Sleep(10);
 			$tick2 = Win32::GetTickCount();
-			if ($idle_limit && (DiffTick($tick2, $tick) > $idle_limit)) {
+			if ( $idle_limit && ( DiffTick( $tick2, $tick ) > $idle_limit ) )
+			{
+
 				# timeout
 				undef $input;
 				last keyin;
 			}
 		}
 		$tick = $tick2;
-		
+
 		# read console
-		my ($evtype, $keydown, undef, $keycode, undef, $ch, undef)
-				= $CONIN->Input();
-		
+		my ( $evtype, $keydown, undef, $keycode, undef, $ch, undef )
+			= $CONIN->Input();
+
 		# next if not a keydown event
-		next	if ($evtype != 1 || !$keydown);
-		
-		$ch = 0x7f	if ($keycode == 0x2e);		# Del
-		next	if ($ch == 0x00);				# Special Keys
-		$ch &= 0xff;	# for multibyte chars
-		
-		if ($ch == 0x0d || $ch == 0x0a) {			# Enter
-			# end
+		next if ( $evtype != 1 || !$keydown );
+
+		$ch = 0x7f if ( $keycode == 0x2e );    # Del
+		next if ( $ch == 0x00 );               # Special Keys
+		$ch &= 0xff;                           # for multibyte chars
+
+		if ( $ch == 0x0d || $ch == 0x0a ) {    # Enter
+			                                   # end
 			last;
-		} elsif ($ch == 0x08 || $ch == 0x7f) {		# BS, Del
-			if (length($input) > 0) {
+		}
+		elsif ( $ch == 0x08 || $ch == 0x7f ) {    # BS, Del
+			if ( length($input) > 0 ) {
+
 				# delete the last char
 				#
 				# BUG: If the last char is multibyte character,
 				#      this doesn't work well.
 				chop $input;
-				
+
 				$CONOUT->Write($unstar_string);
 			}
-		} elsif ($ch == 0x15) {						# Ctrl+U
-			$CONOUT->Write($unstar_string x length($input));
-			$input = '';			# clear all
-		} elsif (($interruptmode > 0)
-				&& ($ch == 0x1b || $ch == 0x03)) {	# Esc, Ctrl+C
-			# cancel
+		}
+		elsif ( $ch == 0x15 ) {    # Ctrl+U
+			$CONOUT->Write( $unstar_string x length($input) );
+			$input = '';           # clear all
+		}
+		elsif (( $interruptmode > 0 )
+			&& ( $ch == 0x1b || $ch == 0x03 ) )
+		{                          # Esc, Ctrl+C
+			                       # cancel
 			undef $input;
 			last;
-		} else {
+		}
+		else {
 			# normal chars
 			$input .= chr($ch);
 			$CONOUT->Write($star_string);
 		}
-		if (length($input) > $INPUT_LIMIT) {
-			$input = substr($input, 0, $INPUT_LIMIT);
+		if ( length($input) > $INPUT_LIMIT ) {
+			$input = substr( $input, 0, $INPUT_LIMIT );
 		}
 	}
-	
-	$CONOUT->Write("\n")	 unless $SUPPRESS_NEWLINE;
-	
+
+	$CONOUT->Write("\n") unless $SUPPRESS_NEWLINE;
+
 	# restore console mode
 	$CONIN->Mode($conmode);
-	
+
 	# restore console handles
-	Win32API::File::CloseHandle($CONIN->{'handle'});
+	Win32API::File::CloseHandle( $CONIN->{'handle'} );
 	$CONIN->{'handle'} = $hStdin;
-	Win32API::File::CloseHandle($CONOUT->{'handle'});
+	Win32API::File::CloseHandle( $CONOUT->{'handle'} );
 	$CONOUT->{'handle'} = $hStderr;
-	
+
 	$CONIN = undef;
 	close STDIN;
 	open STDIN, '+<CONIN$';
@@ -156,19 +166,20 @@ keyin:
 }
 
 sub DiffTick {
-	my ($tick1, $tick2) = @_;
+	my ( $tick1, $tick2 ) = @_;
 	$tick1 &= 0xFFFFFFFF;
 	$tick2 &= 0xFFFFFFFF;
-	
-	if ($tick1 >= $tick2) {
+
+	if ( $tick1 >= $tick2 ) {
 		return $tick1 - $tick2;
-	} else {
+	}
+	else {
 		return 0xFFFFFFFF + 1 + $tick1 - $tick2;
 	}
 }
 
 sub IsWin32 {
-	return ($^O eq 'MSWin32');
+	return ( $^O eq 'MSWin32' );
 }
 
 1;
